@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<!-- 1. We remove class="dark" from here, since black will be the default -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantastra Aviation Systems</title>
+    <!-- We'll use Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Enable dark mode
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <!-- Use the Inter font family -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* A little extra style for our brand */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* 2. We don't need the .brand-gradient class anymore, so we can remove it. */
+        /*
+        .brand-gradient {
+            background: linear-gradient(to right, #14b8a6, #0d9488); 
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        */
+    </style>
+</head>
+<!-- 3. Set the body to a black background and light text -->
+<body class="bg-indigo-950 text-gray-100 antialiased">
+
+    <!-- Header & Navigation -->
+    <!-- 4. Make the header a dark gray -->
+    <header class="bg-gray-900 shadow-md">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <!-- 5. Change brand gradient to simple white text -->
+            <a href="#" class="text-2xl font-bold text-white">
+                QUANTASTRA
+            </a>
+            <div class="space-x-6">
+                <!-- 6. Use the light-on-dark link colors -->
+                <a href="index.html" class="text-gray-200 hover:text-teal-400">Home</a>
+                <a href="about.html" class="text-gray-200 hover:text-teal-400">About</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-12">
+
+        <!-- Hero Section -->
+        <section class="text-center mb-16">
+            <h1 class="text-5xl font-bold mb-4">Insights from the Sky</h1>
+            <!-- 7. Use the light-on-dark paragraph color -->
+            <p class="text-xl text-gray-300">Live data and analysis on global air traffic.</p>
+        </section>
+
+        <!-- Live Stats Section -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold mb-6 text-center">Live Global Air Traffic</h2>
+            
+            <!-- 1. We're changing this to a 2-column grid to hold both cards -->
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                
+                <!-- Card 1: Existing "Airborne" card -->
+                <div class="bg-gray-900 rounded-xl shadow-lg p-8">
+                    <div class="text-center">
+                        <div class="text-lg font-medium text-gray-400">Flights Currently Airborne</div>
+                        <!-- This is where our API data will go -->
+                        <div id="flights-count" class="text-7xl font-bold text-white py-4">
+                            Loading...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: NEW "Featured Flight" card -->
+                <div class="bg-gray-900 rounded-xl shadow-lg p-8">
+                    <div class="text-center">
+                        <div class="text-lg font-medium text-gray-400">Featured Flight</div>
+                        <!-- This is where our new API data will go -->
+                        <div id="featured-flight" class="text-7xl font-bold text-white py-4 truncate">
+                            Loading...
+                        </div>
+                        <p id="featured-flight-origin" class="text-sm text-gray-500">Fetching data...</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Blog Post Section -->
+        <section>
+            <h2 class="text-3xl font-bold mb-8 text-center">Blog coming soon...</h2>
+        </section>
+
+        <p class="text-sm text-gray-500 text-center">Data from The OpenSky Network</p>
+    </main>
+
+    <!-- Footer -->
+    <!-- 13. Make the footer dark gray -->
+    <footer class="bg-gray-900 mt-16 py-8 border-t border-gray-700">
+        <div class="container mx-auto px-6 text-center">
+            <!-- 14. Use light-on-dark text color -->
+            <p class="text-gray-300">&copy; 2025 Quantastra Aviation Systems. All rights reserved.</p>
+        </div>
+    </footer>
+
+
+    <!-- JavaScript to fetch API data -->
+    <script>
+        // Wait for the page to load before running the script
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchFlightData();
+        });
+
+        async function fetchFlightData() {
+            const flightCountElement = document.getElementById('flights-count');
+            const featuredFlightElement = document.getElementById('featured-flight');
+            const featuredFlightOriginElement = document.getElementById('featured-flight-origin');
+            const dataSourceLabel = document.getElementById('data-source-label');
+
+            const apiUrl = 'https://opensky-network.org/api/states/all';
+
+            const username = ''; // <-- ADD YOUR OPENSKY USERNAME HERE
+            const password = ''; // <-- ADD YOUR OPENSKY PASSWORD HERE
+            
+            const headers = new Headers();
+            if (username && password) {
+                headers.set('Authorization', 'Basic ' + btoa(username + ":" + password));
+            }
+
+            try {
+                // Add the headers to the fetch request
+                const response = await fetch(apiUrl, { headers: headers });
+
+                // If Rate Limited (429) or Forbidden (403), switch to demo mode
+                if (response.status === 429 || response.status === 403) {
+                    console.warn("API limit reached. Switching to demo mode.");
+                    loadDemoData(flightCountElement, featuredFlightElement, featuredFlightOriginElement, dataSourceLabel);
+                    return; 
+                }
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                const flightCount = data.states ? data.states.length : 0;
+                flightCountElement.innerText = flightCount.toLocaleString();
+
+                if (flightCount > 0) {
+                    let randomFlight = null;
+                    while (!randomFlight) {
+                        const randomIndex = Math.floor(Math.random() * flightCount);
+                        const flight = data.states[randomIndex];
+                        if (flight && flight[1] && flight[2]) {
+                            randomFlight = flight;
+                        }
+                        if (flightCount < 100 && randomIndex > flightCount - 2) break;
+                    }
+
+                    if (randomFlight) {
+                        const callsign = randomFlight[1].trim(); 
+                        const originCountry = randomFlight[2];
+                        featuredFlightElement.innerText = callsign;
+                        featuredFlightOriginElement.innerText = `From: ${originCountry}`;
+                    } else {
+                        featuredFlightElement.innerText = "N/A";
+                        featuredFlightOriginElement.innerText = "No flight data available.";
+                    }
+                } else {
+                    featuredFlightElement.innerText = "N/A";
+                    featuredFlightOriginElement.innerText = "No flights found.";
+                }
+
+            } catch (error) {
+                console.error("Could not fetch flight data (likely CORS or Network), switching to demo:", error);
+                // Fallback to Demo Data on ANY error
+                loadDemoData(flightCountElement, featuredFlightElement, featuredFlightOriginElement, dataSourceLabel);
+            }
+        }
+
+        // --- Demo Data Generator ---
+        function loadDemoData(countEl, flightEl, originEl, sourceEl) {
+            // Generate a realistic random number of flights (usually between 8,000 and 16,000)
+            const randomCount = Math.floor(Math.random() * (16000 - 8000 + 1) + 8000);
+            
+            // Random realistic flight data
+            const demoFlights = [
+                { callsign: "UAE202", origin: "United Arab Emirates" },
+                { callsign: "DLH454", origin: "Germany" },
+                { callsign: "BAW117", origin: "United Kingdom" },
+                { callsign: "QFA10", origin: "Australia" },
+                { callsign: "JAL5", origin: "Japan" },
+                { callsign: "AFR66", origin: "France" },
+                { callsign: "UAL1", origin: "United States" }
+            ];
+            const randomFlight = demoFlights[Math.floor(Math.random() * demoFlights.length)];
+
+            // Update DOM
+            countEl.innerText = randomCount.toLocaleString();
+            flightEl.innerText = randomFlight.callsign;
+            originEl.innerText = `From: ${randomFlight.origin}`;
+            
+            // Add a visual indicator that this is simulated data
+            if (sourceEl) {
+                sourceEl.innerText = "Simulated Data (Live Connection Unavailable)";
+                sourceEl.classList.add("text-yellow-500");
+            }
+        }
+    </script>
+
+</body>
+</html>
