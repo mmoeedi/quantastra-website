@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantastra Weather Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                },
+            },
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-indigo-950 text-gray-100 antialiased flex flex-col min-h-screen">
+
+    <!-- Header (Consistent with other pages) -->
+    <header class="bg-gray-900 shadow-md">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-bold text-white">QUANTASTRA</a>
+            <div class="space-x-6">
+                <a href="index.html" class="text-gray-200 hover:text-teal-400">Home</a>
+                <a href="weather.html" class="text-teal-400 font-bold">Weather</a> <!-- Highlighted -->
+                <a href="about.html" class="text-gray-200 hover:text-teal-400">About</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-12 flex-grow">
+        
+        <div class="max-w-3xl mx-auto text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4">Aviation Weather Center</h1>
+            <p class="text-gray-400">Real-time METAR data from the Aviation Weather Center (NOAA).</p>
+        </div>
+
+        <!-- Search Box -->
+        <div class="max-w-xl mx-auto mb-16">
+            <div class="flex shadow-lg rounded-lg overflow-hidden">
+                <input type="text" id="airport-input" placeholder="Enter ICAO Code (e.g., KJFK, EGLL, OMDB)" 
+                       class="w-full px-6 py-4 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-teal-500 uppercase">
+                <button onclick="getWeather()" 
+                        class="bg-teal-600 hover:bg-teal-500 text-white px-8 font-bold transition-colors">
+                    SEARCH
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 mt-2 text-center">Use 4-letter ICAO codes. (e.g., San Francisco is KSFO)</p>
+        </div>
+
+        <!-- Results Section (Hidden by default) -->
+        <div id="weather-result" class="hidden max-w-4xl mx-auto bg-gray-900 rounded-xl shadow-xl overflow-hidden border border-gray-800">
+            
+            <!-- Header Bar -->
+            <div class="bg-gray-800 p-6 flex justify-between items-center flex-wrap gap-4">
+                <div>
+                    <h2 id="station-id" class="text-3xl font-bold text-white">KJFK</h2>
+                    <p id="station-time" class="text-gray-400 text-sm">Updated: 12:00Z</p>
+                </div>
+                <!-- Flight Category Badge (VFR/IFR) -->
+                <div id="flight-category" class="px-6 py-2 rounded-full font-bold text-black bg-gray-500">
+                    UNKNOWN
+                </div>
+            </div>
+
+            <!-- Data Grid -->
+            <div class="grid md:grid-cols-3 gap-6 p-8">
+                <!-- Wind -->
+                <div class="bg-black bg-opacity-30 p-4 rounded-lg text-center">
+                    <p class="text-gray-500 text-sm uppercase tracking-wider mb-1">Wind</p>
+                    <p id="wind-data" class="text-2xl font-bold text-teal-400">--</p>
+                </div>
+                <!-- Visibility -->
+                <div class="bg-black bg-opacity-30 p-4 rounded-lg text-center">
+                    <p class="text-gray-500 text-sm uppercase tracking-wider mb-1">Visibility</p>
+                    <p id="vis-data" class="text-2xl font-bold text-teal-400">--</p>
+                </div>
+                <!-- Temp / Dewpoint -->
+                <div class="bg-black bg-opacity-30 p-4 rounded-lg text-center">
+                    <p class="text-gray-500 text-sm uppercase tracking-wider mb-1">Temp / Dew</p>
+                    <p id="temp-data" class="text-2xl font-bold text-teal-400">--</p>
+                </div>
+            </div>
+
+            <!-- Raw METAR Text -->
+            <div class="p-6 border-t border-gray-800 bg-black bg-opacity-20">
+                <p class="text-gray-500 text-xs uppercase mb-2">Raw Report</p>
+                <code id="raw-metar" class="text-teal-200 font-mono text-sm break-words">
+                    METAR KJFK...
+                </code>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="error-msg" class="hidden text-center text-red-400 mt-8 font-bold">
+            Could not find weather data for that airport. Please check the code.
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 py-8 border-t border-gray-700 mt-auto">
+        <div class="container mx-auto px-6 text-center">
+            <p class="text-gray-300">&copy; 2025 Quantastra Aviation Systems. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Allow pressing "Enter" key to search
+        document.getElementById("airport-input").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                getWeather();
+            }
+        });
+
+        async function getWeather() {
+            const input = document.getElementById('airport-input').value.toUpperCase().trim();
+            const resultBox = document.getElementById('weather-result');
+            const errorMsg = document.getElementById('error-msg');
+            const errorDetail = document.getElementById('error-detail');
+            
+            // Basic validation
+            if (input.length < 3) {
+                errorDetail.innerText = "Please enter a valid 4-letter ICAO code (e.g., KJFK).";
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            // Reset UI
+            resultBox.classList.add('hidden');
+            errorMsg.classList.add('hidden');
+
+            // --- THE FIX: Using a CORS Proxy ---
+            // We route the request through 'corsproxy.io' to bypass browser security blocks on local/static sites.
+            const targetUrl = `https://aviationweather.gov/api/data/metar?ids=${input}&format=json&taf=false&hours=1`;
+            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
+
+            try {
+                const response = await fetch(proxyUrl);
+                
+                if (!response.ok) throw new Error("API Connection Error");
+                
+                const data = await response.json();
+                
+                if (!data || data.length === 0) {
+                    throw new Error("Airport not found or no data available.");
+                }
+
+                const metar = data[0]; // Get the most recent report
+
+                // --- Update the UI with Data ---
+                document.getElementById('station-id').innerText = metar.icaoId;
+                document.getElementById('station-time').innerText = "Observation: " + metar.receiptTime;
+                document.getElementById('raw-metar').innerText = metar.rawOb;
+
+                // 1. Wind
+                let windStr = "Calm";
+                if (metar.wdir !== undefined && metar.wdir !== null) {
+                    windStr = `${metar.wdir}° at ${metar.wspd || 0} kt`;
+                    if (metar.wgst) windStr += ` (Gusts ${metar.wgst})`;
+                }
+                document.getElementById('wind-data').innerText = windStr;
+
+                // 2. Visibility
+                document.getElementById('vis-data').innerText = metar.visib ? `${metar.visib}+ SM` : "Unrestricted";
+
+                // 3. Temp
+                document.getElementById('temp-data').innerText = `${metar.temp}°C / ${metar.dewp}°C`;
+
+                // 4. Flight Category Badge
+                const badge = document.getElementById('flight-category');
+                const cat = metar.flightCategory || "UNKNOWN"; 
+                
+                badge.innerText = cat;
+                badge.className = "px-6 py-2 rounded-full font-bold text-black border-2 border-white shadow-lg";
+
+                // Color code
+                if (cat === "VFR") badge.classList.add("bg-green-500");
+                else if (cat === "MVFR") badge.classList.add("bg-blue-400");
+                else if (cat === "IFR") badge.classList.add("bg-red-500");
+                else if (cat === "LIFR") badge.classList.add("bg-purple-500");
+                else badge.classList.add("bg-gray-400");
+
+                // Show result
+                resultBox.classList.remove('hidden');
+
+            } catch (err) {
+                console.error(err);
+                errorDetail.innerText = err.message || "Could not retrieve data.";
+                errorMsg.classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
