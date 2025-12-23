@@ -1,127 +1,192 @@
-<!DOCTYPE html>
-<!-- 1. We remove class="dark" from here, since black will be the default -->
-<html lang="en">
-<head>
+<html lang="en" class="scroll-smooth"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantastra Aviation Systems</title>
-    <!-- We'll use Tailwind CSS for styling -->
+    <title>Quantastra | Aviation Intelligence</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030303;
+            color: #e4e4e7;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(255,255,255,0.03) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(255,255,255,0.03) 0px, transparent 50%);
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .text-glow {
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Fade in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+    </style>
     <script>
         tailwind.config = {
-            darkMode: 'class', // Enable dark mode
             theme: {
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                     },
+                    colors: {
+                        zinc: {
+                            850: '#1f1f22',
+                            950: '#0a0a0a', 
+                        }
+                    },
+                    letterSpacing: {
+                        tighter: '-0.04em',
+                        tight: '-0.02em',
+                    }
                 },
             },
         }
     </script>
-    <!-- Use the Inter font family -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        /* A little extra style for our brand */
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* 2. We don't need the .brand-gradient class anymore, so we can remove it. */
-        /*
-        .brand-gradient {
-            background: linear-gradient(to right, #14b8a6, #0d9488); 
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        */
-    </style>
 </head>
-<!-- 3. Set the body to a black background and light text -->
-<body class="bg-indigo-950 text-gray-100 antialiased">
+<body class="antialiased selection:bg-white/20 selection:text-white min-h-screen flex flex-col justify-between">
 
-    <!-- Header & Navigation -->
-    <!-- 4. Make the header a dark gray -->
-    <header class="bg-gray-900 shadow-md">
-        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <!-- 5. Change brand gradient to simple white text -->
-            <a href="#" class="text-2xl font-bold text-white">
-                QUANTASTRA
+    <!-- Navigation -->
+    <header class="fixed top-0 w-full z-50 border-b border-white/5 bg-[#030303]/80 backdrop-blur-md transition-all duration-300">
+        <nav class="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center">
+            <!-- Brand -->
+            <a href="#" class="flex items-center gap-2 group">
+                <div class="w-6 h-6 bg-white text-black flex items-center justify-center rounded-[4px] text-xs font-bold tracking-tighter">Q</div>
+                <span class="text-sm font-semibold tracking-tight text-white group-hover:opacity-80 transition-opacity">QUANTASTRA</span>
             </a>
-            <div class="space-x-6">
-                <!-- 6. Use the light-on-dark link colors -->
-                <a href="index.html" class="text-gray-200 hover:text-teal-400">Home</a>
-                <a href="weather.html" class="text-teal-400 font-bold">Weather</a> <!-- Highlighted -->
-                <a href="about.html" class="text-gray-200 hover:text-teal-400">About</a>
+            
+            <!-- Menu -->
+            <div class="hidden md:flex items-center gap-8">
+                <a href="index.html" class="text-xs font-medium text-zinc-400 hover:text-white transition-colors">Home</a>
+                <a href="weather.html" class="text-xs font-medium text-white flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+                    <span class="relative flex h-1.5 w-1.5">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                    </span>
+                    Live Weather
+                </a>
+                <a href="about.html" class="text-xs font-medium text-zinc-400 hover:text-white transition-colors">About</a>
             </div>
         </nav>
     </header>
 
     <!-- Main Content -->
-    <main class="container mx-auto px-6 py-12">
+    <main class="flex-grow pt-32 pb-20 px-6">
+        <div class="max-w-6xl mx-auto">
 
-        <!-- Hero Section -->
-        <section class="text-center mb-16">
-            <h1 class="text-5xl font-bold mb-4">Insights from the Sky</h1>
-            <!-- 7. Use the light-on-dark paragraph color -->
-            <p class="text-xl text-gray-300">Live data and analysis on global air traffic.</p>
-        </section>
-
-        <!-- Live Stats Section -->
-        <section class="mb-16">
-            <h2 class="text-3xl font-bold mb-6 text-center">Live Global Air Traffic</h2>
-            
-            <!-- 1. We're changing this to a 2-column grid to hold both cards -->
-            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <!-- Hero Section -->
+            <section class="text-center mb-20 animate-fade-in">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/[0.02] mb-8">
+                    <span class="iconify text-zinc-400" data-icon="lucide:radar" data-width="12"></span>
+                    <span class="text-[10px] font-medium tracking-wide text-zinc-400 uppercase">System Operational</span>
+                </div>
                 
-                <!-- Card 1: Existing "Airborne" card -->
-                <div class="bg-gray-900 rounded-xl shadow-lg p-8">
-                    <div class="text-center">
-                        <div class="text-lg font-medium text-gray-400">Flights Currently Airborne</div>
-                        <!-- This is where our API data will go -->
-                        <div id="flights-count" class="text-7xl font-bold text-white py-4">
-                            Loading...
+                <h1 class="text-5xl md:text-7xl font-medium text-white tracking-tighter mb-6 text-glow">
+                    Insights from <br class="hidden md:block">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-b from-zinc-200 to-zinc-600">the Stratosphere.</span>
+                </h1>
+                <p class="text-base md:text-lg text-zinc-500 font-light max-w-lg mx-auto leading-relaxed">
+                    Real-time telemetry and global air traffic analysis powered by The OpenSky Network.
+                </p>
+            </section>
+
+            <!-- Live Stats Grid -->
+            <section class="mb-24">
+                <div class="flex items-center justify-between mb-8 px-2">
+                    <h2 class="text-sm font-medium text-white tracking-tight flex items-center gap-2">
+                        <span class="iconify" data-icon="lucide:activity" data-width="16"></span>
+                        Live Global Metrics
+                    </h2>
+                    <span id="data-source-label" class="text-[10px] text-zinc-600 uppercase tracking-widest font-medium">Live Feed</span>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    
+                    <!-- Card 1: Airborne -->
+                    <div class="glass-card rounded-xl p-8 relative overflow-hidden group hover:bg-white/[0.04] transition-colors duration-500">
+                        <div class="absolute top-0 right-0 p-8 opacity-20 group-hover:opacity-40 transition-opacity">
+                            <span class="iconify text-white" data-icon="lucide:plane" data-width="64" stroke-width="1"></span>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-1">Active Traffic</div>
+                            <div class="text-sm text-zinc-400 mb-8">Total flights currently airborne</div>
+                            
+                            <div class="flex items-baseline gap-2">
+                                <div id="flights-count" class="text-6xl md:text-7xl font-semibold text-white tracking-tighter">
+                                    <span class="text-2xl text-zinc-600 animate-pulse">---</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Card 2: NEW "Featured Flight" card -->
-                <div class="bg-gray-900 rounded-xl shadow-lg p-8">
-                    <div class="text-center">
-                        <div class="text-lg font-medium text-gray-400">Featured Flight</div>
-                        <!-- This is where our new API data will go -->
-                        <div id="featured-flight" class="text-7xl font-bold text-white py-4 truncate">
-                            Loading...
+                    <!-- Card 2: Featured Flight -->
+                    <div class="glass-card rounded-xl p-8 relative overflow-hidden group hover:bg-white/[0.04] transition-colors duration-500">
+                        <div class="absolute top-0 right-0 p-8 opacity-20 group-hover:opacity-40 transition-opacity">
+                            <span class="iconify text-white" data-icon="lucide:scan-eye" data-width="64" stroke-width="1"></span>
                         </div>
-                        <p id="featured-flight-origin" class="text-sm text-gray-500">Fetching data...</p>
+                        <div class="relative z-10">
+                            <div class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-1">Spotlight</div>
+                            <div class="text-sm text-zinc-400 mb-8">Randomly selected active vessel</div>
+                            
+                            <div id="featured-flight" class="text-6xl md:text-7xl font-semibold text-white tracking-tighter truncate">
+                                <span class="text-2xl text-zinc-600 animate-pulse">---</span>
+                            </div>
+                            <div class="flex items-center gap-2 mt-4 text-zinc-400">
+                                <span class="iconify" data-icon="lucide:map-pin" data-width="14"></span>
+                                <p id="featured-flight-origin" class="text-xs font-medium tracking-wide">Initializing scan...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Intelligence / Blog Placeholder -->
+            <section class="border-t border-white/5 pt-20">
+                <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+                    <div>
+                        <h2 class="text-2xl font-medium text-white tracking-tight mb-2">Intelligence Stream</h2>
+                        <p class="text-sm text-zinc-500">Blog Section Coming Soon...</p>
                     </div>
                 </div>
+            </section>
 
-            </div>
-        </section>
-
-        <!-- Blog Post Section -->
-        <section>
-            <h2 class="text-3xl font-bold mb-8 text-center">Blog coming soon...</h2>
-        </section>
-
-        <p class="text-sm text-gray-500 text-center">Data from The OpenSky Network</p>
+        </div>
     </main>
 
     <!-- Footer -->
-    <!-- 13. Make the footer dark gray -->
-    <footer class="bg-gray-900 mt-16 py-8 border-t border-gray-700">
-        <div class="container mx-auto px-6 text-center">
-            <!-- 14. Use light-on-dark text color -->
-            <p class="text-gray-300">&copy; 2025 Quantastra Aviation Systems. All rights reserved.</p>
+    <footer class="border-t border-white/5 bg-[#030303] py-12">
+        <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-zinc-800 rounded-full"></div>
+                <p class="text-[10px] text-zinc-500 uppercase tracking-wider">© 2025 Quantastra Systems.</p>
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <a href="#" class="text-zinc-600 hover:text-white transition-colors"><span class="iconify" data-icon="lucide:github" data-width="16"></span></a>
+                <a href="#" class="text-zinc-600 hover:text-white transition-colors"><span class="iconify" data-icon="lucide:twitter" data-width="16"></span></a>
+                <div class="h-4 w-px bg-white/10"></div>
+                <span class="text-[10px] text-zinc-600">Data: OpenSky Network</span>
+            </div>
         </div>
     </footer>
 
-
-    <!-- JavaScript to fetch API data -->
+    <!-- Logic -->
     <script>
-        // Wait for the page to load before running the script
         document.addEventListener('DOMContentLoaded', () => {
             fetchFlightData();
         });
@@ -134,8 +199,8 @@
 
             const apiUrl = 'https://opensky-network.org/api/states/all';
 
-            const username = ''; // <-- ADD YOUR OPENSKY USERNAME HERE
-            const password = ''; // <-- ADD YOUR OPENSKY PASSWORD HERE
+            const username = ''; // Add credentials if available
+            const password = ''; 
             
             const headers = new Headers();
             if (username && password) {
@@ -143,12 +208,11 @@
             }
 
             try {
-                // Add the headers to the fetch request
                 const response = await fetch(apiUrl, { headers: headers });
 
-                // If Rate Limited (429) or Forbidden (403), switch to demo mode
-                if (response.status === 429 || response.status === 403) {
-                    console.warn("API limit reached. Switching to demo mode.");
+                // Handle Rate Limiting
+                if (response.status === 429 || response.status === 403 || response.status === 504) {
+                    console.warn("API limit reached or timeout. Switching to simulation.");
                     loadDemoData(flightCountElement, featuredFlightElement, featuredFlightOriginElement, dataSourceLabel);
                     return; 
                 }
@@ -158,47 +222,49 @@
                 }
                 const data = await response.json();
 
+                // Animate Numbers
                 const flightCount = data.states ? data.states.length : 0;
-                flightCountElement.innerText = flightCount.toLocaleString();
+                animateValue(flightCountElement, 0, flightCount, 1500);
 
                 if (flightCount > 0) {
+                    // Pick a random flight
                     let randomFlight = null;
-                    while (!randomFlight) {
-                        const randomIndex = Math.floor(Math.random() * flightCount);
+                    let attempts = 0;
+                    
+                    // Try to find a flight with a callsign
+                    while (!randomFlight && attempts < 50) {
+                        const randomIndex = Math.floor(Math.random() * data.states.length);
                         const flight = data.states[randomIndex];
                         if (flight && flight[1] && flight[2]) {
                             randomFlight = flight;
                         }
-                        if (flightCount < 100 && randomIndex > flightCount - 2) break;
+                        attempts++;
                     }
 
                     if (randomFlight) {
-                        const callsign = randomFlight[1].trim(); 
+                        const callsign = randomFlight[1].trim() || "N/A"; 
                         const originCountry = randomFlight[2];
                         featuredFlightElement.innerText = callsign;
-                        featuredFlightOriginElement.innerText = `From: ${originCountry}`;
+                        featuredFlightOriginElement.innerText = `Origin: ${originCountry}`;
                     } else {
-                        featuredFlightElement.innerText = "N/A";
-                        featuredFlightOriginElement.innerText = "No flight data available.";
+                        featuredFlightElement.innerText = "Scanning...";
+                        featuredFlightOriginElement.innerText = "Target acquisition pending";
                     }
                 } else {
-                    featuredFlightElement.innerText = "N/A";
-                    featuredFlightOriginElement.innerText = "No flights found.";
+                    featuredFlightElement.innerText = "Silent";
+                    featuredFlightOriginElement.innerText = "No activity detected";
                 }
 
             } catch (error) {
-                console.error("Could not fetch flight data (likely CORS or Network), switching to demo:", error);
-                // Fallback to Demo Data on ANY error
+                console.error("Fetch error, switching to simulation:", error);
                 loadDemoData(flightCountElement, featuredFlightElement, featuredFlightOriginElement, dataSourceLabel);
             }
         }
 
-        // --- Demo Data Generator ---
         function loadDemoData(countEl, flightEl, originEl, sourceEl) {
-            // Generate a realistic random number of flights (usually between 8,000 and 16,000)
+            // Realistic simulation
             const randomCount = Math.floor(Math.random() * (16000 - 8000 + 1) + 8000);
             
-            // Random realistic flight data
             const demoFlights = [
                 { callsign: "UAE202", origin: "United Arab Emirates" },
                 { callsign: "DLH454", origin: "Germany" },
@@ -206,22 +272,32 @@
                 { callsign: "QFA10", origin: "Australia" },
                 { callsign: "JAL5", origin: "Japan" },
                 { callsign: "AFR66", origin: "France" },
-                { callsign: "UAL1", origin: "United States" }
+                { callsign: "UAL1", origin: "United States" },
+                { callsign: "KLM89", origin: "Netherlands" }
             ];
             const randomFlight = demoFlights[Math.floor(Math.random() * demoFlights.length)];
 
-            // Update DOM
-            countEl.innerText = randomCount.toLocaleString();
+            animateValue(countEl, 0, randomCount, 2000);
             flightEl.innerText = randomFlight.callsign;
-            originEl.innerText = `From: ${randomFlight.origin}`;
+            originEl.innerText = `Origin: ${randomFlight.origin}`;
             
-            // Add a visual indicator that this is simulated data
             if (sourceEl) {
-                sourceEl.innerText = "Simulated Data (Live Connection Unavailable)";
-                sourceEl.classList.add("text-yellow-500");
+                sourceEl.innerHTML = '<span class="flex items-center gap-1 text-amber-500"><span class="iconify" data-icon="lucide:alert-circle" data-width="10"></span> Simulated Feed</span>';
             }
+        }
+
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString();
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
         }
     </script>
 
-</body>
-</html>
+</body></html>

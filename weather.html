@@ -1,114 +1,241 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en" class="scroll-smooth"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantastra Weather Center</title>
+    <title>Weather Center - Quantastra</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030303;
+            color: #e4e4e7;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(255,255,255,0.03) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(255,255,255,0.03) 0px, transparent 50%);
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .input-glass {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .input-glass:focus-within {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .text-glow {
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        /* Custom scrollbar for raw text area */
+        .raw-text::-webkit-scrollbar {
+            width: 4px;
+        }
+        .raw-text::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.02);
+        }
+        .raw-text::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+        }
+    </style>
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        zinc: {
+                            850: '#1f1f22',
+                            950: '#0a0a0a', 
+                        }
+                    },
+                    letterSpacing: {
+                        tighter: '-0.04em',
+                        tight: '-0.02em',
+                    }
                 },
             },
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-    </style>
 </head>
-<body class="bg-indigo-950 text-gray-100 antialiased flex flex-col min-h-screen">
+<body class="antialiased selection:bg-white/20 selection:text-white min-h-screen flex flex-col justify-between">
 
-    <!-- Header (Consistent with other pages) -->
-    <header class="bg-gray-900 shadow-md">
-        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="index.html" class="text-2xl font-bold text-white">QUANTASTRA</a>
-            <div class="space-x-6">
-                <a href="index.html" class="text-gray-200 hover:text-teal-400">Home</a>
-                <a href="weather.html" class="text-teal-400 font-bold">Weather</a> <!-- Highlighted -->
-                <a href="about.html" class="text-gray-200 hover:text-teal-400">About</a>
+    <!-- Navigation -->
+    <header class="fixed top-0 w-full z-50 border-b border-white/5 bg-[#030303]/80 backdrop-blur-md transition-all duration-300">
+        <nav class="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center">
+            <!-- Brand -->
+            <a href="index.html" class="flex items-center gap-2 group">
+                <div class="w-6 h-6 bg-white text-black flex items-center justify-center rounded-[4px] text-xs font-bold tracking-tighter">Q</div>
+                <span class="text-sm font-semibold tracking-tight text-white group-hover:opacity-80 transition-opacity">QUANTASTRA</span>
+            </a>
+            
+            <!-- Menu -->
+            <div class="hidden md:flex items-center gap-8">
+                <a href="index.html" class="text-xs font-medium text-zinc-400 hover:text-white transition-colors">Home</a>
+                <a href="weather.html" class="text-xs font-medium text-white flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+                    <span class="relative flex h-1.5 w-1.5">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                    </span>
+                    Live Weather
+                </a>
+                <a href="about.html" class="text-xs font-medium text-zinc-400 hover:text-white transition-colors">About</a>
             </div>
         </nav>
     </header>
 
     <!-- Main Content -->
-    <main class="container mx-auto px-6 py-12 flex-grow">
-        
-        <div class="max-w-3xl mx-auto text-center mb-12">
-            <h1 class="text-4xl font-bold mb-4">Aviation Weather Center</h1>
-            <p class="text-gray-400">Real-time METAR data from the Aviation Weather Center (NOAA).</p>
-        </div>
+    <main class="flex-grow pt-32 pb-20 px-6">
+        <div class="max-w-3xl mx-auto animate-fade-in">
 
-        <!-- Search Box -->
-        <div class="max-w-xl mx-auto mb-16">
-            <div class="flex shadow-lg rounded-lg overflow-hidden">
-                <input type="text" id="airport-input" placeholder="Enter ICAO Code (e.g., KJFK, EGLL, OMDB)" 
-                       class="w-full px-6 py-4 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-teal-500 uppercase">
-                <button onclick="getWeather()" 
-                        class="bg-teal-600 hover:bg-teal-500 text-white px-8 font-bold transition-colors">
-                    SEARCH
-                </button>
-            </div>
-            <p class="text-xs text-gray-500 mt-2 text-center">Use 4-letter ICAO codes. (e.g., San Francisco is KSFO)</p>
-        </div>
-
-        <!-- Results Section (Hidden by default) -->
-        <div id="weather-result" class="hidden max-w-4xl mx-auto bg-gray-900 rounded-xl shadow-xl overflow-hidden border border-gray-800">
+            <!-- Header Section -->
+            <section class="text-center mb-12">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/[0.02] mb-8">
+                    <span class="iconify text-zinc-400" data-icon="lucide:cloud-lightning" data-width="12"></span>
+                    <span class="text-[10px] font-medium tracking-wide text-zinc-400 uppercase">Live Metar Data</span>
+                </div>
+                
+                <h1 class="text-5xl md:text-6xl font-medium text-white tracking-tighter mb-6 text-glow">
+                    Aviation Weather
+                </h1>
+                <p class="text-base md:text-lg text-zinc-500 font-light max-w-lg mx-auto leading-relaxed">
+                    Real-time meteorological aerodrome reports from the NOAA Aviation Weather Center.
+                </p>
+            </section>
             
-            <!-- Header Bar -->
-            <div class="bg-gray-800 p-6 flex justify-between items-center flex-wrap gap-4">
-                <div>
-                    <h2 id="station-id" class="text-3xl font-bold text-white">KJFK</h2>
-                    <p id="station-time" class="text-gray-400 text-sm">Updated: 12:00Z</p>
+            <!-- Search Section -->
+            <div class="max-w-md mx-auto mb-16 relative">
+                <div class="input-glass rounded-lg p-1.5 flex items-center">
+                    <div class="pl-3 pr-2 text-zinc-500">
+                        <span class="iconify" data-icon="lucide:search" data-width="18"></span>
+                    </div>
+                    <input type="text" id="airport-input" placeholder="ENTER ICAO (e.g. KJFK)" class="w-full bg-transparent text-white text-sm placeholder-zinc-600 focus:outline-none uppercase font-medium tracking-wide">
+                    <button onclick="getWeather()" class="bg-white hover:bg-zinc-200 text-black px-4 py-2 rounded-[6px] text-xs font-medium transition-colors tracking-tight">
+                        Search
+                    </button>
                 </div>
-                <!-- Flight Category Badge (VFR/IFR) -->
-                <div id="flight-category" class="px-6 py-2 rounded-full font-bold text-black bg-gray-500">
-                    UNKNOWN
-                </div>
-            </div>
-
-            <!-- Data Grid -->
-            <div class="grid md:grid-cols-3 gap-6 p-8">
-                <!-- Wind -->
-                <div class="bg-black bg-opacity-30 p-4 rounded-lg text-center">
-                    <p class="text-gray-500 text-sm uppercase tracking-wider mb-1">Wind</p>
-                    <p id="wind-data" class="text-2xl font-bold text-teal-400">--</p>
-                </div>
-                <!-- Visibility -->
-                <div class="bg-black bg-opacity-30 p-4 rounded-lg text-center">
-                    <p class="text-gray-500 text-sm uppercase tracking-wider mb-1">Visibility</p>
-                    <p id="vis-data" class="text-2xl font-bold text-teal-400">--</p>
-                </div>
-                <!-- Temp / Dewpoint -->
-                <div class="bg-black bg-opacity-30 p-4 rounded-lg text-center">
-                    <p class="text-gray-500 text-sm uppercase tracking-wider mb-1">Temp / Dew</p>
-                    <p id="temp-data" class="text-2xl font-bold text-teal-400">--</p>
+                <!-- Error Message -->
+                <div id="error-msg" class="hidden absolute -bottom-12 left-0 w-full text-center">
+                    <div class="inline-flex items-center gap-2 text-rose-400 text-xs bg-rose-500/10 px-3 py-1.5 rounded-full border border-rose-500/20">
+                        <span class="iconify" data-icon="lucide:alert-circle" data-width="12"></span>
+                        <span id="error-detail">Station not found</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Raw METAR Text -->
-            <div class="p-6 border-t border-gray-800 bg-black bg-opacity-20">
-                <p class="text-gray-500 text-xs uppercase mb-2">Raw Report</p>
-                <code id="raw-metar" class="text-teal-200 font-mono text-sm break-words">
-                    METAR KJFK...
-                </code>
+            <!-- Results Card (Hidden by default) -->
+            <div id="weather-result" class="hidden glass-card rounded-xl overflow-hidden animate-fade-in transition-all duration-500">
+                
+                <!-- Station Header -->
+                <div class="p-6 md:p-8 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <div class="flex items-baseline gap-3 mb-1">
+                            <h2 id="station-id" class="text-3xl font-medium text-white tracking-tight">KJFK</h2>
+                            <div id="flight-category" class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wider uppercase border">
+                                Loading
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 text-zinc-500">
+                            <span class="iconify" data-icon="lucide:clock" data-width="12"></span>
+                            <p id="station-time" class="text-xs font-mono tracking-tight">Updated: --:--Z</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                         <div class="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                            <span class="iconify text-zinc-400" data-icon="lucide:map-pin" data-width="14"></span>
+                         </div>
+                    </div>
+                </div>
+
+                <!-- Metrics Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/5">
+                    
+                    <!-- Wind -->
+                    <div class="p-6 md:p-8 hover:bg-white/[0.01] transition-colors">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="iconify text-zinc-500" data-icon="lucide:wind" data-width="16"></span>
+                            <span class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium">Wind</span>
+                        </div>
+                        <p id="wind-data" class="text-xl text-white font-medium tracking-tight">--</p>
+                    </div>
+
+                    <!-- Visibility -->
+                    <div class="p-6 md:p-8 hover:bg-white/[0.01] transition-colors">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="iconify text-zinc-500" data-icon="lucide:eye" data-width="16"></span>
+                            <span class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium">Visibility</span>
+                        </div>
+                        <p id="vis-data" class="text-xl text-white font-medium tracking-tight">--</p>
+                    </div>
+
+                    <!-- Temp -->
+                    <div class="p-6 md:p-8 hover:bg-white/[0.01] transition-colors">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="iconify text-zinc-500" data-icon="lucide:thermometer" data-width="16"></span>
+                            <span class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium">Temp / Dew</span>
+                        </div>
+                        <p id="temp-data" class="text-xl text-white font-medium tracking-tight">--</p>
+                    </div>
+
+                </div>
+
+                <!-- Raw Text -->
+                <div class="bg-black/20 p-6 md:p-8 border-t border-white/5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="iconify text-zinc-600" data-icon="lucide:terminal" data-width="14"></span>
+                        <span class="text-[10px] uppercase tracking-widest text-zinc-600 font-medium">Raw Metar</span>
+                    </div>
+                    <code id="raw-metar" class="block font-mono text-xs text-zinc-400 leading-relaxed break-words">
+                        Waiting for data...
+                    </code>
+                </div>
             </div>
+
+            <!-- Empty State Helper -->
+            <div id="empty-state" class="text-center mt-20 opacity-40">
+                <span class="iconify mx-auto text-zinc-600 mb-4" data-icon="lucide:radar" data-width="32"></span>
+                <p class="text-xs text-zinc-600 font-medium tracking-wide uppercase">System Ready</p>
+            </div>
+
         </div>
-
-        <!-- Error Message -->
-        <div id="error-msg" class="hidden text-center text-red-400 mt-8 font-bold">
-            Could not find weather data for that airport. Please check the code.
-        </div>
-
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 py-8 border-t border-gray-700 mt-auto">
-        <div class="container mx-auto px-6 text-center">
-            <p class="text-gray-300">&copy; 2025 Quantastra Aviation Systems. All rights reserved.</p>
+    <footer class="border-t border-white/5 bg-[#030303] py-12">
+        <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-zinc-800 rounded-full"></div>
+                <p class="text-[10px] text-zinc-500 uppercase tracking-wider">© 2025 Quantastra Systems.</p>
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <a href="#" class="text-zinc-600 hover:text-white transition-colors"><span class="iconify" data-icon="lucide:github" data-width="16"></span></a>
+                <a href="#" class="text-zinc-600 hover:text-white transition-colors"><span class="iconify" data-icon="lucide:twitter" data-width="16"></span></a>
+                <div class="h-4 w-px bg-white/10"></div>
+                <span class="text-[10px] text-zinc-600">Established 2024</span>
+            </div>
         </div>
     </footer>
 
@@ -123,48 +250,60 @@
         async function getWeather() {
             const input = document.getElementById('airport-input').value.toUpperCase().trim();
             const resultBox = document.getElementById('weather-result');
+            const emptyState = document.getElementById('empty-state');
             const errorMsg = document.getElementById('error-msg');
             const errorDetail = document.getElementById('error-detail');
+            const searchBtn = document.querySelector('button');
             
             // Basic validation
             if (input.length < 3) {
-                errorDetail.innerText = "Please enter a valid 4-letter ICAO code (e.g., KJFK).";
+                errorDetail.innerText = "Please enter a valid 4-letter ICAO code.";
                 errorMsg.classList.remove('hidden');
                 return;
             }
 
-            // Reset UI
-            resultBox.classList.add('hidden');
+            // UI Loading State
+            searchBtn.innerText = "Scanning...";
+            searchBtn.classList.add('opacity-70', 'cursor-not-allowed');
             errorMsg.classList.add('hidden');
 
-            // --- THE FIX: Using a CORS Proxy ---
-            // We route the request through 'corsproxy.io' to bypass browser security blocks on local/static sites.
             const targetUrl = `https://aviationweather.gov/api/data/metar?ids=${input}&format=json&taf=false&hours=1`;
+            // Using corsproxy.io as per request functionality
             const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
 
             try {
                 const response = await fetch(proxyUrl);
                 
-                if (!response.ok) throw new Error("API Connection Error");
+                if (!response.ok) throw new Error("Connection Error");
                 
                 const data = await response.json();
                 
                 if (!data || data.length === 0) {
-                    throw new Error("Airport not found or no data available.");
+                    throw new Error("Station not found or unavailable.");
                 }
 
                 const metar = data[0]; // Get the most recent report
 
                 // --- Update the UI with Data ---
                 document.getElementById('station-id').innerText = metar.icaoId;
-                document.getElementById('station-time').innerText = "Observation: " + metar.receiptTime;
+                
+                // Format time nicer
+                const obsTime = new Date(metar.receiptTime);
+                document.getElementById('station-time').innerText = "OBSERVED: " + obsTime.toUTCString().split(' ')[4].slice(0,5) + "Z";
+                
                 document.getElementById('raw-metar').innerText = metar.rawOb;
 
                 // 1. Wind
                 let windStr = "Calm";
                 if (metar.wdir !== undefined && metar.wdir !== null) {
-                    windStr = `${metar.wdir}° at ${metar.wspd || 0} kt`;
-                    if (metar.wgst) windStr += ` (Gusts ${metar.wgst})`;
+                    if (metar.wdir === "VRB") {
+                        windStr = `Variable at ${metar.wspd || 0} kt`;
+                    } else {
+                        // Pad with leading zeros for aviation style
+                        const dir = metar.wdir.toString().padStart(3, '0');
+                        windStr = `${dir}° / ${metar.wspd || 0}kt`;
+                    }
+                    if (metar.wgst) windStr += ` G${metar.wgst}`;
                 }
                 document.getElementById('wind-data').innerText = windStr;
 
@@ -174,29 +313,45 @@
                 // 3. Temp
                 document.getElementById('temp-data').innerText = `${metar.temp}°C / ${metar.dewp}°C`;
 
-                // 4. Flight Category Badge
+                // 4. Flight Category Badge Styling (Adapted for Dark/Glass Theme)
                 const badge = document.getElementById('flight-category');
                 const cat = metar.flightCategory || "UNKNOWN"; 
                 
                 badge.innerText = cat;
-                badge.className = "px-6 py-2 rounded-full font-bold text-black border-2 border-white shadow-lg";
+                
+                // Base classes for the badge
+                let badgeClasses = "px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wider uppercase border ";
 
-                // Color code
-                if (cat === "VFR") badge.classList.add("bg-green-500");
-                else if (cat === "MVFR") badge.classList.add("bg-blue-400");
-                else if (cat === "IFR") badge.classList.add("bg-red-500");
-                else if (cat === "LIFR") badge.classList.add("bg-purple-500");
-                else badge.classList.add("bg-gray-400");
+                // Style logic matching the theme colors
+                if (cat === "VFR") {
+                    badgeClasses += "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                } else if (cat === "MVFR") {
+                    badgeClasses += "bg-blue-500/10 text-blue-400 border-blue-500/20";
+                } else if (cat === "IFR") {
+                    badgeClasses += "bg-rose-500/10 text-rose-400 border-rose-500/20";
+                } else if (cat === "LIFR") {
+                    badgeClasses += "bg-purple-500/10 text-purple-400 border-purple-500/20";
+                } else {
+                    badgeClasses += "bg-zinc-500/10 text-zinc-400 border-zinc-500/20";
+                }
+                
+                badge.className = badgeClasses;
 
-                // Show result
+                // Show result, hide empty state
                 resultBox.classList.remove('hidden');
+                emptyState.classList.add('hidden');
 
             } catch (err) {
                 console.error(err);
-                errorDetail.innerText = err.message || "Could not retrieve data.";
+                errorDetail.innerText = err.message || "Data retrieval failed.";
                 errorMsg.classList.remove('hidden');
+                resultBox.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+            } finally {
+                searchBtn.innerText = "Search";
+                searchBtn.classList.remove('opacity-70', 'cursor-not-allowed');
             }
         }
     </script>
-</body>
-</html>
+
+</body></html>
