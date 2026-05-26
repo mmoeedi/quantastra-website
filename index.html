@@ -265,7 +265,11 @@
     <script>
         const YT_CHANNEL_ID = 'UCmSOEnP7QluiAzDo8lD_NBA';
         const YT_CHANNEL_URL = 'https://www.youtube.com/@aviationjams';
+
+        // ▼▼▼ PASTE YOUR CLOUDFLARE WORKER URL HERE (no trailing slash) ▼▼▼
         const PROXY = "https://quantastra-proxy.moeedirfan2000.workers.dev";
+        // ▲▲▲ until you do, the live feeds fall back to demo/placeholder states ▲▲▲
+        function viaProxy(url) { return `${PROXY}/?url=${encodeURIComponent(url)}`; }
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchFlightData();
@@ -298,30 +302,20 @@
         /* ---------------- YouTube Feed ---------------- */
         async function loadVideos() {
             const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${YT_CHANNEL_ID}`;
-            // YouTube's RSS feed has no CORS headers, so we route through public proxies.
-            // We try several in order and fall back to a channel CTA if all fail.
-            const proxies = [
-                u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-                u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
-                u => `https://thingproxy.freeboard.io/fetch/${u}`
-            ];
-
-            for (const proxy of proxies) {
-                try {
-                    const res = await fetch(proxy(feedUrl), { cache: 'no-store' });
-                    if (!res.ok) continue;
-                    const text = await res.text();
-                    const xml = new DOMParser().parseFromString(text, 'text/xml');
-                    if (xml.querySelector('parsererror')) continue;
-                    const entries = Array.from(xml.getElementsByTagName('entry'));
-                    if (!entries.length) continue;
-                    renderVideos(entries.slice(0, 6));
-                    return;
-                } catch (e) {
-                    console.warn('Video proxy failed, trying next:', e);
-                }
+            // Routed through our own Cloudflare Worker, which adds CORS headers.
+            try {
+                const res = await fetch(viaProxy(feedUrl), { cache: 'no-store' });
+                if (!res.ok) throw new Error('proxy status ' + res.status);
+                const text = await res.text();
+                const xml = new DOMParser().parseFromString(text, 'text/xml');
+                if (xml.querySelector('parsererror')) throw new Error('parse error');
+                const entries = Array.from(xml.getElementsByTagName('entry'));
+                if (!entries.length) throw new Error('no entries');
+                renderVideos(entries.slice(0, 6));
+            } catch (e) {
+                console.warn('Video feed failed (is the Worker URL set?):', e);
+                renderVideoFallback();
             }
-            renderVideoFallback();
         }
 
         function getTagText(parent, tag) {
@@ -412,7 +406,7 @@
             const apiUrl = 'https://opensky-network.org/api/states/all';
 
             try {
-                const response = await fetch(apiUrl);
+                const response = await fetch(viaProxy(apiUrl));
 
                 if (response.status === 429 || response.status === 403 || response.status === 504) {
                     console.warn("API limit reached or timeout. Switching to simulation.");

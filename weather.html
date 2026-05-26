@@ -297,6 +297,11 @@
             }
         }
 
+        /* ---------------- Edge proxy config ----------------
+           Paste your Cloudflare Worker URL below (no trailing slash). */
+        const PROXY = "https://quantastra-proxy.moeedirfan2000.workers.dev";
+        function viaProxy(url) { return `${PROXY}/?url=${encodeURIComponent(url)}`; }
+
         /* ---------------- Quick lookup + Enter key + auto-load ---------------- */
         function quickSearch(code) {
             document.getElementById('airport-input').value = code;
@@ -310,31 +315,9 @@
         // Load a sensible default on arrival so the page shows live data immediately.
         document.addEventListener('DOMContentLoaded', () => quickSearch('OPIS'));
 
-        /* ---------------- Proxy chain ----------------
-           NOAA's API has no CORS headers for browsers, so we route through public
-           proxies. We try several in order so one outage doesn't break the page. */
-        async function fetchMetarJson(targetUrl) {
-            const proxies = [
-                u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-                u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
-                u => `https://thingproxy.freeboard.io/fetch/${u}`
-            ];
-            for (const proxy of proxies) {
-                try {
-                    const res = await fetch(proxy(targetUrl), { cache: 'no-store' });
-                    if (!res.ok) continue;
-                    const text = await res.text();
-                    try {
-                        return JSON.parse(text);
-                    } catch (e) {
-                        continue; // proxy returned non-JSON (e.g. an error page)
-                    }
-                } catch (e) {
-                    console.warn('Weather proxy failed, trying next:', e);
-                }
-            }
-            throw new Error('All data proxies are unavailable. Try again shortly.');
-        }
+        /* ---------------- Data fetch via our edge proxy ----------------
+           NOAA's API has no CORS headers for browsers, so we route through our
+           own Cloudflare Worker, which fetches it server-side and adds them. */
 
         /* ---------------- Main fetch ---------------- */
         async function getWeather() {
@@ -358,7 +341,9 @@
             const targetUrl = `https://aviationweather.gov/api/data/metar?ids=${input}&format=json&taf=false&hours=1`;
 
             try {
-                const data = await fetchMetarJson(targetUrl);
+                const res = await fetch(viaProxy(targetUrl), { cache: 'no-store' });
+                if (!res.ok) throw new Error('Weather service unavailable. Try again shortly.');
+                const data = await res.json();
                 
                 if (!data || data.length === 0) {
                     throw new Error("Station not found or unavailable.");
