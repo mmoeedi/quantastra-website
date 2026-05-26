@@ -2,6 +2,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Quantastra</title>
+    <meta name="description" content="Quantastra turns live, open-source airspace data into something a curious human can actually see and understand. Built in the open by one engineer who looks up.">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,39 +40,29 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        zinc: {
-                            850: '#1f1f22',
-                            950: '#0a0a0a', 
-                        }
-                    },
-                    letterSpacing: {
-                        tighter: '-0.04em',
-                        tight: '-0.02em',
-                    }
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { zinc: { 850: '#1f1f22', 950: '#0a0a0a' } },
+                    letterSpacing: { tighter: '-0.04em', tight: '-0.02em' }
                 },
             },
         }
     </script>
 </head>
-<body class="antialiased selection:bg-white/20 selection:text-white min-h-screen flex flex-col justify-between">
+<body class="antialiased selection:bg-white/20 selection:text-white min-h-screen flex flex-col justify-between overflow-x-hidden">
 
     <!-- Navigation -->
     <header class="fixed top-0 w-full z-50 border-b border-white/5 bg-[#030303]/80 backdrop-blur-md transition-all duration-300">
         <nav class="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center">
             <!-- Brand -->
-            <a href="index.html" class="flex items-center gap-2 group">
+            <a href="index.html" class="flex items-center gap-2 group z-50 relative">
                 <div class="w-6 h-6 bg-white text-black flex items-center justify-center rounded-[4px] text-xs font-bold tracking-tighter">Q</div>
                 <span class="text-sm font-semibold tracking-tight text-white group-hover:opacity-80 transition-opacity">QUANTASTRA</span>
             </a>
             
-            <!-- Menu -->
+            <!-- Desktop Menu -->
             <div class="hidden md:flex items-center gap-8">
                 <a href="index.html" class="text-xs font-medium text-zinc-400 hover:text-white transition-colors">Home</a>
-                <a href="weather.html" class="text-xs font-medium text-white flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+                <a href="weather.html" class="text-xs font-medium text-zinc-400 hover:text-white transition-colors flex items-center gap-1.5">
                     <span class="relative flex h-1.5 w-1.5">
                       <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                       <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
@@ -83,8 +74,43 @@
                     <div class="h-1 w-1 bg-white rounded-full"></div>
                 </a>
             </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button onclick="toggleMenu()" class="md:hidden text-zinc-400 hover:text-white transition-colors z-50 relative p-2 -mr-2">
+                <span class="iconify" data-icon="lucide:menu" data-width="20"></span>
+            </button>
         </nav>
     </header>
+
+    <!-- Mobile Sidebar Menu Overlay -->
+    <div id="mobile-sidebar" class="fixed inset-0 z-[45] pointer-events-none transition-all duration-500">
+        <div id="sidebar-backdrop" onclick="toggleMenu()" class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-500"></div>
+        <div id="sidebar-drawer" class="absolute top-0 right-0 w-64 h-full bg-[#0a0a0a] border-l border-white/10 transform translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col pt-24 px-8">
+            <div class="flex flex-col gap-6">
+                <a href="index.html" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors flex items-center justify-between group">
+                    Home
+                    <span class="iconify opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 duration-300" data-icon="lucide:arrow-right" data-width="14"></span>
+                </a>
+                <div class="h-px bg-white/5 w-full"></div>
+                <a href="weather.html" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors flex items-center justify-between group">
+                    Live Weather
+                    <span class="iconify opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 duration-300" data-icon="lucide:arrow-right" data-width="14"></span>
+                </a>
+                <div class="h-px bg-white/5 w-full"></div>
+                <a href="about.html" class="text-sm font-medium text-white flex items-center justify-between">
+                    About
+                    <div class="h-1.5 w-1.5 bg-white rounded-full shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>
+                </a>
+            </div>
+            <div class="mt-auto mb-10">
+                <p class="text-[10px] text-zinc-600 uppercase tracking-widest mb-4">Watch</p>
+                <a href="https://www.youtube.com/@aviationjams" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-zinc-300 hover:text-white transition-colors text-sm font-medium">
+                    <span class="iconify text-rose-500" data-icon="lucide:youtube" data-width="18"></span>
+                    Aviation JAMs
+                </a>
+            </div>
+        </div>
+    </div>
 
     <!-- Main Content -->
     <main class="flex-grow pt-32 pb-20 px-6">
@@ -94,70 +120,87 @@
             <section class="text-center mb-16">
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/[0.02] mb-8">
                     <span class="iconify text-zinc-400" data-icon="lucide:info" data-width="12"></span>
-                    <span class="text-[10px] font-medium tracking-wide text-zinc-400 uppercase">Mission Statement</span>
+                    <span class="text-[10px] font-medium tracking-wide text-zinc-400 uppercase">The Story</span>
                 </div>
                 
                 <h1 class="text-5xl md:text-6xl font-medium text-white tracking-tighter mb-6 text-glow">
                     About Quantastra
                 </h1>
                 <p class="text-base md:text-lg text-zinc-500 font-light max-w-lg mx-auto leading-relaxed">
-                    Deciphering the global airspace through data and storytelling.
+                    One engineer, a stack of open data, and a fascination with everything that flies.
                 </p>
             </section>
             
             <!-- Content Card -->
             <div class="glass-card rounded-xl p-8 md:p-12 relative overflow-hidden">
-                <!-- Background decorative element -->
                 <div class="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none">
                     <span class="iconify text-white" data-icon="lucide:globe" data-width="200"></span>
                 </div>
 
                 <div class="relative z-10 space-y-8">
                     <p class="text-lg md:text-xl text-zinc-300 font-light leading-relaxed">
-                        Welcome to Quantastra. We are a passionate group of aviation enthusiasts, data scientists, and storytellers dedicated to bringing the world of air travel to life.
+                        Quantastra started with a habit anyone who loves aviation knows: looking up when you hear an engine overhead and wondering where it's going.
                     </p>
                     
                     <div class="h-px w-full bg-white/5 my-8"></div>
 
                     <p class="text-zinc-400 font-light leading-relaxed">
-                        Our mission is to provide clear, insightful, and engaging analysis of the global airspace. We believe that by leveraging live data from open-source networks, we can paint a picture of an industry that is always in motion.
+                        I'm a computer-science graduate who spent years working in and around aviation before realizing the two halves of my life — code and aircraft — were better together. Most of the world's air traffic streams by as open data: positions, altitudes, callsigns, weather. It's all out there, and almost none of it is built for a curious person to simply look at and understand. Quantastra is my attempt to close that gap — taking live, open-source airspace data and turning it into something you can read in a few seconds.
                     </p>
                     
                     <div class="pt-4">
                         <h2 class="text-2xl font-medium text-white tracking-tight mb-4 flex items-center gap-2">
                             <span class="iconify text-zinc-500" data-icon="lucide:telescope" data-width="20"></span>
-                            Our Vision
+                            The Idea
                         </h2>
                         <div class="space-y-6">
                             <p class="text-zinc-400 font-light leading-relaxed">
-                                We're not just about numbers; we're about the stories those numbers tell. From tracking the comeback of post-pandemic travel to exploring the technology that keeps us safe in the skies, Quantastra aims to be your first stop for aviation insights.
+                                I'm less interested in the numbers themselves than in the stories they tell — the rhythm of a continent waking up, a single transatlantic crossing, the quiet way weather reshapes an entire day of flying. So Quantastra pairs live data with short, plain-language context: the same spirit as my YouTube channel, Aviation JAMs, where I try to make a slice of aviation make sense in about a minute.
                             </p>
                             <p class="text-zinc-400 font-light leading-relaxed">
-                                This blog is a project of passion. It's built for those who look up when they hear an engine, for the data-curious, and for the travelers who want to understand the vast, complex, and beautiful system that connects our world.
+                                This is a work in progress, built in the open and getting a little better every week. It's for the people who look up when they hear an engine, for the data-curious, and for travelers who want to understand the vast, complex, beautiful system that quietly connects the world.
                             </p>
                         </div>
                     </div>
+
+                    <!-- Personalize: replace with your name, or delete this line. -->
+                    <p class="text-zinc-500 font-light italic pt-2">— The person behind Quantastra</p>
                 </div>
             </div>
             
-            <!-- Team Grid (Optional visual addition to match style) -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-                <div class="glass-card p-4 rounded-lg text-center border border-white/5 hover:bg-white/5 transition-colors cursor-default group">
-                    <span class="iconify mx-auto text-zinc-600 group-hover:text-zinc-400 transition-colors mb-2" data-icon="lucide:database" data-width="20"></span>
-                    <div class="text-[10px] text-zinc-500 uppercase tracking-widest font-medium">Data</div>
+            <!-- Disciplines Grid -->
+            <div class="mt-8">
+                <p class="text-[10px] text-zinc-600 uppercase tracking-widest font-medium text-center mb-4">What goes into it</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="glass-card p-4 rounded-lg text-center border border-white/5 hover:bg-white/5 transition-colors cursor-default group">
+                        <span class="iconify mx-auto text-zinc-600 group-hover:text-zinc-400 transition-colors mb-2" data-icon="lucide:database" data-width="20"></span>
+                        <div class="text-[10px] text-zinc-500 uppercase tracking-widest font-medium">Data</div>
+                    </div>
+                    <div class="glass-card p-4 rounded-lg text-center border border-white/5 hover:bg-white/5 transition-colors cursor-default group">
+                        <span class="iconify mx-auto text-zinc-600 group-hover:text-zinc-400 transition-colors mb-2" data-icon="lucide:plane" data-width="20"></span>
+                        <div class="text-[10px] text-zinc-500 uppercase tracking-widest font-medium">Aviation</div>
+                    </div>
+                    <div class="glass-card p-4 rounded-lg text-center border border-white/5 hover:bg-white/5 transition-colors cursor-default group">
+                        <span class="iconify mx-auto text-zinc-600 group-hover:text-zinc-400 transition-colors mb-2" data-icon="lucide:code" data-width="20"></span>
+                        <div class="text-[10px] text-zinc-500 uppercase tracking-widest font-medium">Engineering</div>
+                    </div>
+                    <div class="glass-card p-4 rounded-lg text-center border border-white/5 hover:bg-white/5 transition-colors cursor-default group">
+                        <span class="iconify mx-auto text-zinc-600 group-hover:text-zinc-400 transition-colors mb-2" data-icon="lucide:pen-tool" data-width="20"></span>
+                        <div class="text-[10px] text-zinc-500 uppercase tracking-widest font-medium">Storytelling</div>
+                    </div>
                 </div>
-                <div class="glass-card p-4 rounded-lg text-center border border-white/5 hover:bg-white/5 transition-colors cursor-default group">
-                    <span class="iconify mx-auto text-zinc-600 group-hover:text-zinc-400 transition-colors mb-2" data-icon="lucide:plane" data-width="20"></span>
-                    <div class="text-[10px] text-zinc-500 uppercase tracking-widest font-medium">Aviation</div>
+            </div>
+
+            <!-- YouTube CTA -->
+            <div class="glass-card rounded-xl p-8 md:p-10 mt-8 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+                <div>
+                    <h3 class="text-lg font-medium text-white tracking-tight mb-1">Aviation, one minute at a time.</h3>
+                    <p class="text-sm text-zinc-500 font-light">Catch the short-form videos behind Quantastra on YouTube.</p>
                 </div>
-                <div class="glass-card p-4 rounded-lg text-center border border-white/5 hover:bg-white/5 transition-colors cursor-default group">
-                    <span class="iconify mx-auto text-zinc-600 group-hover:text-zinc-400 transition-colors mb-2" data-icon="lucide:code" data-width="20"></span>
-                    <div class="text-[10px] text-zinc-500 uppercase tracking-widest font-medium">Engineering</div>
-                </div>
-                <div class="glass-card p-4 rounded-lg text-center border border-white/5 hover:bg-white/5 transition-colors cursor-default group">
-                    <span class="iconify mx-auto text-zinc-600 group-hover:text-zinc-400 transition-colors mb-2" data-icon="lucide:pen-tool" data-width="20"></span>
-                    <div class="text-[10px] text-zinc-500 uppercase tracking-widest font-medium">Design</div>
-                </div>
+                <a href="https://www.youtube.com/@aviationjams?sub_confirmation=1" target="_blank" rel="noopener" class="shrink-0 inline-flex items-center gap-2 bg-white hover:bg-zinc-200 text-black px-5 py-2.5 rounded-lg text-xs font-semibold tracking-tight transition-colors">
+                    <span class="iconify" data-icon="lucide:youtube" data-width="16"></span>
+                    Subscribe to Aviation JAMs
+                </a>
             </div>
 
         </div>
@@ -172,13 +215,37 @@
             </div>
             
             <div class="flex items-center gap-6">
-                <a href="#" class="text-zinc-600 hover:text-white transition-colors"><span class="iconify" data-icon="lucide:github" data-width="16"></span></a>
-                <a href="#" class="text-zinc-600 hover:text-white transition-colors"><span class="iconify" data-icon="lucide:twitter" data-width="16"></span></a>
+                <a href="https://www.youtube.com/@aviationjams" target="_blank" rel="noopener" aria-label="YouTube" class="text-zinc-600 hover:text-white transition-colors"><span class="iconify" data-icon="lucide:youtube" data-width="16"></span></a>
+                <a href="#" class="text-zinc-600 hover:text-white transition-colors" aria-label="GitHub"><span class="iconify" data-icon="lucide:github" data-width="16"></span></a>
                 <div class="h-4 w-px bg-white/10"></div>
                 <span class="text-[10px] text-zinc-600">Established 2024</span>
             </div>
         </div>
     </footer>
 
+    <script>
+        /* ---------------- Mobile Menu ---------------- */
+        let isMenuOpen = false;
+        function toggleMenu() {
+            const sidebar = document.getElementById('mobile-sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            const drawer = document.getElementById('sidebar-drawer');
+            const btnIcon = document.querySelector('button[onclick="toggleMenu()"] span');
+            isMenuOpen = !isMenuOpen;
+            if (isMenuOpen) {
+                sidebar.classList.remove('pointer-events-none');
+                backdrop.classList.remove('opacity-0');
+                drawer.classList.remove('translate-x-full');
+                document.body.style.overflow = 'hidden';
+                btnIcon.setAttribute('data-icon', 'lucide:x');
+            } else {
+                sidebar.classList.add('pointer-events-none');
+                backdrop.classList.add('opacity-0');
+                drawer.classList.add('translate-x-full');
+                document.body.style.overflow = '';
+                btnIcon.setAttribute('data-icon', 'lucide:menu');
+            }
+        }
+    </script>
 
 </body></html>
