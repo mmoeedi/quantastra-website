@@ -1,0 +1,518 @@
+<html lang="en" class="scroll-smooth"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Route Analyzer - Quantastra</title>
+    <meta name="description" content="Route viability analyzer: pick two airports and assess distance, aircraft suitability, runway feasibility, and route economics. Network-planning logic, made tangible.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030303;
+            color: #e4e4e7;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(255,255,255,0.03) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(255,255,255,0.03) 0px, transparent 50%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .input-glass {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .input-glass:focus-within { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
+        select.bare, input.bare {
+            background: transparent; border: none; outline: none; color: #fff; width: 100%;
+        }
+        select.bare option { background: #0a0a0a; color: #fff; }
+        .text-glow { text-shadow: 0 0 20px rgba(255, 255, 255, 0.1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.8s ease-out forwards; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: { extend: {
+                fontFamily: { sans: ['Inter', 'sans-serif'] },
+                colors: { zinc: { 850: '#1f1f22', 950: '#0a0a0a' } },
+                letterSpacing: { tighter: '-0.04em', tight: '-0.02em' }
+            } },
+        }
+    </script>
+</head>
+<body class="antialiased selection:bg-white/20 selection:text-white min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+    <!-- Navigation -->
+    <header class="fixed top-0 w-full z-50 border-b border-white/5 bg-[#030303]/80 backdrop-blur-md transition-all duration-300">
+        <nav class="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2 group z-50 relative">
+                <div class="w-6 h-6 bg-white text-black flex items-center justify-center rounded-[4px] text-xs font-bold tracking-tighter">Q</div>
+                <span class="text-sm font-semibold tracking-tight text-white group-hover:opacity-80 transition-opacity">QUANTASTRA</span>
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a href="index.html" class="text-xs font-medium text-zinc-400 hover:text-white transition-colors">Home</a>
+                <a href="weather.html" class="text-xs font-medium text-zinc-400 hover:text-white transition-colors">Live Weather</a>
+                <a href="route-analyzer.html" class="text-xs font-medium text-white flex items-center gap-2">
+                    Route Analyzer
+                    <div class="h-1 w-1 bg-white rounded-full"></div>
+                </a>
+                <a href="about.html" class="text-xs font-medium text-zinc-400 hover:text-white transition-colors">About</a>
+            </div>
+            <button onclick="toggleMenu()" class="md:hidden text-zinc-400 hover:text-white transition-colors z-50 relative p-2 -mr-2">
+                <span class="iconify" data-icon="lucide:menu" data-width="20"></span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Mobile Sidebar -->
+    <div id="mobile-sidebar" class="fixed inset-0 z-[45] pointer-events-none transition-all duration-500">
+        <div id="sidebar-backdrop" onclick="toggleMenu()" class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-500"></div>
+        <div id="sidebar-drawer" class="absolute top-0 right-0 w-64 h-full bg-[#0a0a0a] border-l border-white/10 transform translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col pt-24 px-8">
+            <div class="flex flex-col gap-6">
+                <a href="index.html" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Home</a>
+                <div class="h-px bg-white/5 w-full"></div>
+                <a href="weather.html" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Live Weather</a>
+                <div class="h-px bg-white/5 w-full"></div>
+                <a href="route-analyzer.html" class="text-sm font-medium text-white flex items-center justify-between">
+                    Route Analyzer
+                    <div class="h-1.5 w-1.5 bg-white rounded-full shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>
+                </a>
+                <div class="h-px bg-white/5 w-full"></div>
+                <a href="about.html" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors">About</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <main class="flex-grow pt-32 pb-20 px-6">
+        <div class="max-w-5xl mx-auto animate-fade-in">
+
+            <section class="text-center mb-12">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/[0.02] mb-8">
+                    <span class="iconify text-zinc-400" data-icon="lucide:route" data-width="12"></span>
+                    <span class="text-[10px] font-medium tracking-wide text-zinc-400 uppercase">Network Planning</span>
+                </div>
+                <h1 class="text-5xl md:text-6xl font-medium text-white tracking-tighter mb-6 text-glow">Route Analyzer</h1>
+                <p class="text-base md:text-lg text-zinc-500 font-light max-w-xl mx-auto leading-relaxed">
+                    Pick two airports. See the distance, which aircraft can actually fly it, whether the runways cope, and whether the economics hold up.
+                </p>
+            </section>
+
+            <!-- Route selectors -->
+            <div class="glass-card rounded-xl p-6 md:p-8 mb-6">
+                <div class="grid md:grid-cols-[1fr_auto_1fr] gap-4 items-end">
+                    <div>
+                        <label class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium mb-2 block">Origin</label>
+                        <div class="input-glass rounded-lg px-4 py-3">
+                            <select id="origin" class="bare text-sm font-medium"></select>
+                        </div>
+                    </div>
+                    <button onclick="swapAirports()" title="Swap" class="hidden md:flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] hover:bg-white/[0.07] text-zinc-400 hover:text-white transition-colors mb-px">
+                        <span class="iconify" data-icon="lucide:arrow-left-right" data-width="16"></span>
+                    </button>
+                    <div>
+                        <label class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium mb-2 block">Destination</label>
+                        <div class="input-glass rounded-lg px-4 py-3">
+                            <select id="destination" class="bare text-sm font-medium"></select>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="analyze()" class="w-full mt-6 bg-white hover:bg-zinc-200 text-black py-3 rounded-lg text-sm font-semibold tracking-tight transition-colors flex items-center justify-center gap-2">
+                    <span class="iconify" data-icon="lucide:radar" data-width="16"></span>
+                    Analyze Route
+                </button>
+            </div>
+
+            <!-- Results -->
+            <div id="results" class="hidden space-y-6">
+
+                <!-- Route summary -->
+                <div class="glass-card rounded-xl p-6 md:p-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 id="route-title" class="text-xl font-medium text-white tracking-tight">—</h2>
+                        <span id="haul-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wider uppercase border bg-zinc-500/10 text-zinc-400 border-zinc-500/20">—</span>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/5 rounded-lg overflow-hidden">
+                        <div class="bg-[#080808] p-5">
+                            <div class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium mb-2">Distance</div>
+                            <div id="m-distance" class="text-2xl text-white font-medium tracking-tight">—</div>
+                        </div>
+                        <div class="bg-[#080808] p-5">
+                            <div class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium mb-2">Est. Block Time</div>
+                            <div id="m-time" class="text-2xl text-white font-medium tracking-tight">—</div>
+                        </div>
+                        <div class="bg-[#080808] p-5">
+                            <div class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium mb-2">Viable Aircraft</div>
+                            <div id="m-aircraft" class="text-2xl text-white font-medium tracking-tight">—</div>
+                        </div>
+                        <div class="bg-[#080808] p-5">
+                            <div class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium mb-2">Runway Check</div>
+                            <div id="m-runway" class="text-2xl text-white font-medium tracking-tight">—</div>
+                        </div>
+                    </div>
+                    <p id="airport-notes" class="text-xs text-zinc-500 font-light mt-4 leading-relaxed"></p>
+                </div>
+
+                <!-- Aircraft suitability -->
+                <div class="glass-card rounded-xl p-6 md:p-8">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="iconify text-zinc-500" data-icon="lucide:plane" data-width="16"></span>
+                        <h3 class="text-sm font-medium text-white tracking-tight">Aircraft Suitability</h3>
+                    </div>
+                    <p class="text-xs text-zinc-600 font-light mb-5">Can each type physically operate this sector, and does the destination runway support it?</p>
+                    <div id="aircraft-list" class="space-y-2"></div>
+                    <p class="text-[11px] text-zinc-600 font-light mt-5 leading-relaxed">
+                        Ranges are nominal published figures; real range trades against payload, so sectors near an aircraft's max are flagged payload-limited. Runway figures are approximate sea-level requirements — always verify against the official AIP and the day's conditions (temperature, elevation, weight).
+                    </p>
+                </div>
+
+                <!-- Economics sandbox -->
+                <div class="glass-card rounded-xl p-6 md:p-8">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="iconify text-zinc-500" data-icon="lucide:calculator" data-width="16"></span>
+                        <h3 class="text-sm font-medium text-white tracking-tight">Economics Sandbox</h3>
+                    </div>
+                    <p class="text-xs text-zinc-600 font-light mb-6">The objective numbers are computed. The market assumptions are yours — adjust them and watch the route's economics move.</p>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div>
+                            <label class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium mb-2 block">Seats</label>
+                            <div class="input-glass rounded-lg px-3 py-2.5"><input id="in-seats" type="number" value="180" class="bare text-sm"></div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium mb-2 block">Avg Fare (USD)</label>
+                            <div class="input-glass rounded-lg px-3 py-2.5"><input id="in-fare" type="number" value="120" class="bare text-sm"></div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium mb-2 block">Load Factor (%)</label>
+                            <div class="input-glass rounded-lg px-3 py-2.5"><input id="in-lf" type="number" value="78" class="bare text-sm"></div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium mb-2 block">Cost / seat-km (¢)</label>
+                            <div class="input-glass rounded-lg px-3 py-2.5"><input id="in-cask" type="number" value="5" step="0.1" class="bare text-sm"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/5 rounded-lg overflow-hidden">
+                        <div class="bg-[#080808] p-5">
+                            <div class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium mb-2">Revenue / flight</div>
+                            <div id="e-rev" class="text-xl text-white font-medium tracking-tight">—</div>
+                        </div>
+                        <div class="bg-[#080808] p-5">
+                            <div class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium mb-2">Cost / flight</div>
+                            <div id="e-cost" class="text-xl text-white font-medium tracking-tight">—</div>
+                        </div>
+                        <div class="bg-[#080808] p-5">
+                            <div class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium mb-2">Profit / flight</div>
+                            <div id="e-profit" class="text-xl font-medium tracking-tight">—</div>
+                        </div>
+                        <div class="bg-[#080808] p-5">
+                            <div class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium mb-2">Breakeven Load</div>
+                            <div id="e-be" class="text-xl text-white font-medium tracking-tight">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verdict -->
+                <div class="glass-card rounded-xl p-6 md:p-8 border-white/10">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="iconify text-zinc-500" data-icon="lucide:clipboard-check" data-width="16"></span>
+                        <h3 class="text-sm font-medium text-white tracking-tight">Read-out</h3>
+                    </div>
+                    <p id="verdict" class="text-sm text-zinc-300 font-light leading-relaxed"></p>
+                    <p class="text-[11px] text-zinc-600 font-light mt-4 leading-relaxed border-t border-white/5 pt-4">
+                        Feasibility (distance, range, runway, block time) is computed from real data. Viability depends on demand, competition, and fares — the parts only you can judge. This tool frames the decision; it doesn't make it.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Empty state -->
+            <div id="empty-state" class="text-center mt-16 opacity-40">
+                <span class="iconify mx-auto text-zinc-600 mb-4" data-icon="lucide:map" data-width="32"></span>
+                <p class="text-xs text-zinc-600 font-medium tracking-wide uppercase">Select a route to begin</p>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="border-t border-white/5 bg-[#030303] py-12">
+        <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-zinc-800 rounded-full"></div>
+                <p class="text-[10px] text-zinc-500 uppercase tracking-wider">© 2025 Quantastra Systems.</p>
+            </div>
+            <div class="flex items-center gap-6">
+                <a href="https://www.youtube.com/@aviationjams" target="_blank" rel="noopener" aria-label="YouTube" class="text-zinc-600 hover:text-white transition-colors"><span class="iconify" data-icon="lucide:youtube" data-width="16"></span></a>
+                <div class="h-4 w-px bg-white/10"></div>
+                <span class="text-[10px] text-zinc-600">Airport data: OurAirports (public)</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        /* ---------------- Mobile menu ---------------- */
+        let isMenuOpen = false;
+        function toggleMenu() {
+            const sidebar = document.getElementById('mobile-sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            const drawer = document.getElementById('sidebar-drawer');
+            const btnIcon = document.querySelector('button[onclick="toggleMenu()"] span');
+            isMenuOpen = !isMenuOpen;
+            if (isMenuOpen) {
+                sidebar.classList.remove('pointer-events-none');
+                backdrop.classList.remove('opacity-0');
+                drawer.classList.remove('translate-x-full');
+                document.body.style.overflow = 'hidden';
+                btnIcon.setAttribute('data-icon', 'lucide:x');
+            } else {
+                sidebar.classList.add('pointer-events-none');
+                backdrop.classList.add('opacity-0');
+                drawer.classList.add('translate-x-full');
+                document.body.style.overflow = '';
+                btnIcon.setAttribute('data-icon', 'lucide:menu');
+            }
+        }
+
+        /* ---------------- Real airport data (embedded seed) ----------------
+           Coordinates + longest-runway (m) + elevation (ft) from public
+           OurAirports data. This is the offline seed; see notes on going live. */
+        const AIRPORTS = [
+            // Pakistan
+            { region:"Pakistan", icao:"OPIS", iata:"ISB", city:"Islamabad", lat:33.5607, lon:72.8516, rwy:3658, elev:1761 },
+            { region:"Pakistan", icao:"OPLA", iata:"LHE", city:"Lahore", lat:31.5216, lon:74.4036, rwy:3360, elev:712 },
+            { region:"Pakistan", icao:"OPKC", iata:"KHI", city:"Karachi", lat:24.9065, lon:67.1608, rwy:3400, elev:100 },
+            { region:"Pakistan", icao:"OPPS", iata:"PEW", city:"Peshawar", lat:33.9939, lon:71.5146, rwy:2743, elev:1758 },
+            { region:"Pakistan", icao:"OPMT", iata:"MUX", city:"Multan", lat:30.2032, lon:71.4191, rwy:2743, elev:403 },
+            { region:"Pakistan", icao:"OPQT", iata:"UET", city:"Quetta", lat:30.2514, lon:66.9377, rwy:3500, elev:5267 },
+            { region:"Pakistan", icao:"OPST", iata:"SKT", city:"Sialkot", lat:32.5356, lon:74.3639, rwy:3658, elev:837 },
+            { region:"Pakistan", icao:"OPFA", iata:"LYP", city:"Faisalabad", lat:31.3650, lon:72.9948, rwy:2740, elev:591 },
+            { region:"Pakistan", icao:"OPGT", iata:"GIL", city:"Gilgit", lat:35.9188, lon:74.3336, rwy:1768, elev:4796 },
+            // South Asia
+            { region:"South Asia", icao:"VIDP", iata:"DEL", city:"Delhi", lat:28.5562, lon:77.1000, rwy:4430, elev:777 },
+            { region:"South Asia", icao:"VABB", iata:"BOM", city:"Mumbai", lat:19.0887, lon:72.8679, rwy:3660, elev:39 },
+            { region:"South Asia", icao:"VOBL", iata:"BLR", city:"Bangalore", lat:13.1986, lon:77.7066, rwy:4000, elev:3000 },
+            { region:"South Asia", icao:"VECC", iata:"CCU", city:"Kolkata", lat:22.6547, lon:88.4467, rwy:3627, elev:20 },
+            { region:"South Asia", icao:"VCBI", iata:"CMB", city:"Colombo", lat:7.1808, lon:79.8841, rwy:3350, elev:30 },
+            { region:"South Asia", icao:"VNKT", iata:"KTM", city:"Kathmandu", lat:27.6966, lon:85.3591, rwy:3050, elev:4390 },
+            { region:"South Asia", icao:"VGHS", iata:"DAC", city:"Dhaka", lat:23.8433, lon:90.3978, rwy:3200, elev:30 },
+            { region:"South Asia", icao:"VRMM", iata:"MLE", city:"Malé", lat:4.1918, lon:73.5291, rwy:3200, elev:6 },
+            { region:"South Asia", icao:"OAKB", iata:"KBL", city:"Kabul", lat:34.5658, lon:69.2123, rwy:3511, elev:5877 },
+            // Gulf / Middle East
+            { region:"Gulf & Middle East", icao:"OMDB", iata:"DXB", city:"Dubai", lat:25.2532, lon:55.3657, rwy:4447, elev:62 },
+            { region:"Gulf & Middle East", icao:"OMAA", iata:"AUH", city:"Abu Dhabi", lat:24.4330, lon:54.6511, rwy:4100, elev:88 },
+            { region:"Gulf & Middle East", icao:"OTHH", iata:"DOH", city:"Doha", lat:25.2731, lon:51.6081, rwy:4850, elev:13 },
+            { region:"Gulf & Middle East", icao:"OERK", iata:"RUH", city:"Riyadh", lat:24.9576, lon:46.6988, rwy:4205, elev:2049 },
+            { region:"Gulf & Middle East", icao:"OEJN", iata:"JED", city:"Jeddah", lat:21.6796, lon:39.1565, rwy:3800, elev:48 },
+            { region:"Gulf & Middle East", icao:"OOMS", iata:"MCT", city:"Muscat", lat:23.5933, lon:58.2844, rwy:4000, elev:48 },
+            { region:"Gulf & Middle East", icao:"OKKB", iata:"KWI", city:"Kuwait", lat:29.2266, lon:47.9689, rwy:3500, elev:206 },
+            { region:"Gulf & Middle East", icao:"OBBI", iata:"BAH", city:"Bahrain", lat:26.2708, lon:50.6336, rwy:4000, elev:6 },
+            // Global hubs
+            { region:"Global Hubs", icao:"LTFM", iata:"IST", city:"Istanbul", lat:41.2753, lon:28.7519, rwy:4100, elev:325 },
+            { region:"Global Hubs", icao:"EGLL", iata:"LHR", city:"London Heathrow", lat:51.4700, lon:-0.4543, rwy:3902, elev:83 },
+            { region:"Global Hubs", icao:"WSSS", iata:"SIN", city:"Singapore", lat:1.3644, lon:103.9915, rwy:4000, elev:22 },
+            { region:"Global Hubs", icao:"VHHH", iata:"HKG", city:"Hong Kong", lat:22.3080, lon:113.9185, rwy:3800, elev:28 },
+            { region:"Global Hubs", icao:"KJFK", iata:"JFK", city:"New York JFK", lat:40.6413, lon:-73.7781, rwy:4423, elev:13 },
+            { region:"Global Hubs", icao:"RJTT", iata:"HND", city:"Tokyo Haneda", lat:35.5494, lon:139.7798, rwy:3360, elev:35 },
+        ];
+
+        /* ---------------- Aircraft data (nominal published figures) ---------------- */
+        const AIRCRAFT = [
+            { name:"ATR 72-600", range:1500, rwy:1300, seats:70, speed:500, type:"Turboprop" },
+            { name:"Dash 8 Q400", range:2000, rwy:1300, seats:78, speed:560, type:"Turboprop" },
+            { name:"A320neo", range:6300, rwy:2100, seats:180, speed:840, type:"Narrowbody" },
+            { name:"737-800", range:5400, rwy:2300, seats:189, speed:840, type:"Narrowbody" },
+            { name:"737 MAX 8", range:6500, rwy:2300, seats:178, speed:840, type:"Narrowbody" },
+            { name:"A321neo", range:7400, rwy:2300, seats:220, speed:840, type:"Narrowbody" },
+            { name:"A321XLR", range:8700, rwy:2400, seats:220, speed:840, type:"Narrowbody" },
+            { name:"787-8", range:13500, rwy:2600, seats:250, speed:900, type:"Widebody" },
+            { name:"787-9", range:14000, rwy:2800, seats:290, speed:900, type:"Widebody" },
+            { name:"777-300ER", range:13650, rwy:3000, seats:370, speed:900, type:"Widebody" },
+            { name:"A350-900", range:15000, rwy:2600, seats:315, speed:900, type:"Widebody" },
+        ];
+
+        /* ---------------- Populate dropdowns ---------------- */
+        function buildOptions() {
+            const groups = {};
+            AIRPORTS.forEach((a, i) => {
+                (groups[a.region] = groups[a.region] || []).push({ a, i });
+            });
+            let html = '';
+            for (const region in groups) {
+                html += `<optgroup label="${region}">`;
+                groups[region].forEach(({ a, i }) => {
+                    html += `<option value="${i}">${a.city} (${a.iata})</option>`;
+                });
+                html += `</optgroup>`;
+            }
+            document.getElementById('origin').innerHTML = html;
+            document.getElementById('destination').innerHTML = html;
+            document.getElementById('origin').value = 0;   // Islamabad
+            document.getElementById('destination').value = 18; // Dubai
+        }
+
+        function swapAirports() {
+            const o = document.getElementById('origin');
+            const d = document.getElementById('destination');
+            [o.value, d.value] = [d.value, o.value];
+            analyze();
+        }
+
+        /* ---------------- Great-circle distance (haversine) ---------------- */
+        function distanceKm(a, b) {
+            const R = 6371;
+            const toRad = x => x * Math.PI / 180;
+            const dLat = toRad(b.lat - a.lat);
+            const dLon = toRad(b.lon - a.lon);
+            const lat1 = toRad(a.lat), lat2 = toRad(b.lat);
+            const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+            return 2 * R * Math.asin(Math.sqrt(h));
+        }
+
+        function fmt(n) { return Math.round(n).toLocaleString(); }
+
+        /* ---------------- Main analysis ---------------- */
+        function analyze() {
+            const origin = AIRPORTS[+document.getElementById('origin').value];
+            const dest = AIRPORTS[+document.getElementById('destination').value];
+
+            if (origin.icao === dest.icao) {
+                alert("Origin and destination are the same airport.");
+                return;
+            }
+
+            const dist = distanceKm(origin, dest);
+
+            // Haul classification
+            let haul, haulClass;
+            if (dist < 1500) { haul = "Short-haul"; haulClass = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"; }
+            else if (dist < 4000) { haul = "Medium-haul"; haulClass = "bg-blue-500/10 text-blue-400 border-blue-500/20"; }
+            else { haul = "Long-haul"; haulClass = "bg-purple-500/10 text-purple-400 border-purple-500/20"; }
+
+            // Evaluate each aircraft
+            const evaluated = AIRCRAFT.map(ac => {
+                let status, label, cls;
+                if (dist > ac.range) {
+                    status = "no"; label = "Out of range"; cls = "text-rose-400";
+                } else if (dist > ac.range * 0.9) {
+                    status = "marginal"; label = "Payload-limited"; cls = "text-amber-400";
+                } else {
+                    status = "ok"; label = "Capable"; cls = "text-emerald-400";
+                }
+                const runwayOk = dest.rwy >= ac.rwy && origin.rwy >= ac.rwy;
+                return { ac, status, label, cls, runwayOk };
+            });
+
+            const viable = evaluated.filter(e => e.status !== "no" && e.runwayOk);
+            const rangeButShortRwy = evaluated.filter(e => e.status !== "no" && !e.runwayOk);
+
+            // Representative speed for block time: use median viable, else narrowbody default
+            const speed = viable.length ? viable[Math.floor(viable.length/2)].ac.speed : 840;
+            const blockH = dist / speed + 0.5; // +30 min taxi/climb/descent overhead
+            const hrs = Math.floor(blockH);
+            const mins = Math.round((blockH - hrs) * 60);
+
+            // Fill summary
+            document.getElementById('route-title').innerText = `${origin.city} (${origin.iata}) → ${dest.city} (${dest.iata})`;
+            const badge = document.getElementById('haul-badge');
+            badge.innerText = haul;
+            badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wider uppercase border " + haulClass;
+            document.getElementById('m-distance').innerHTML = `${fmt(dist)}<span class="text-sm text-zinc-500 ml-1">km</span>`;
+            document.getElementById('m-time').innerHTML = `${hrs}h ${mins}m`;
+            document.getElementById('m-aircraft').innerText = viable.length;
+            document.getElementById('m-runway').innerHTML = rangeButShortRwy.length
+                ? `<span class="text-amber-400">${rangeButShortRwy.length} limited</span>`
+                : `<span class="text-emerald-400">Clear</span>`;
+
+            // Airport notes (elevation / hot-and-high flags)
+            let notes = [];
+            [origin, dest].forEach(ap => {
+                if (ap.elev > 4000) notes.push(`${ap.city} sits at ${fmt(ap.elev)} ft — a hot-and-high field, so real runway and payload requirements run higher than the sea-level figures below.`);
+            });
+            if (rangeButShortRwy.length) {
+                notes.push(`${rangeButShortRwy.length} type(s) have the range but exceed an available runway length — see flags below.`);
+            }
+            document.getElementById('airport-notes').innerText = notes.join(' ');
+
+            // Aircraft list
+            document.getElementById('aircraft-list').innerHTML = evaluated.map(e => {
+                const rwyFlag = (e.status !== "no" && !e.runwayOk)
+                    ? `<span class="text-amber-400 text-[11px] flex items-center gap-1"><span class="iconify" data-icon="lucide:triangle-alert" data-width="11"></span> runway short</span>`
+                    : '';
+                return `
+                <div class="flex items-center justify-between py-2.5 px-3 rounded-lg ${e.status==='ok'&&e.runwayOk ? 'bg-white/[0.02]' : ''}">
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-medium text-white w-28">${e.ac.name}</span>
+                        <span class="text-[10px] uppercase tracking-wider text-zinc-600">${e.ac.type}</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        ${rwyFlag}
+                        <span class="text-xs font-medium ${e.cls}">${e.label}</span>
+                    </div>
+                </div>`;
+            }).join('');
+
+            // Economics — seed seats with largest viable aircraft if available
+            if (viable.length) {
+                const biggest = viable.reduce((m, e) => e.ac.seats > m ? e.ac.seats : m, 0);
+                document.getElementById('in-seats').value = biggest;
+            }
+            window._dist = dist; // stash for econ recompute
+            recomputeEcon();
+
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('empty-state').classList.add('hidden');
+        }
+
+        /* ---------------- Economics ---------------- */
+        function recomputeEcon() {
+            const dist = window._dist || 0;
+            const seats = +document.getElementById('in-seats').value || 0;
+            const fare = +document.getElementById('in-fare').value || 0;
+            const lf = (+document.getElementById('in-lf').value || 0) / 100;
+            const caskCents = +document.getElementById('in-cask').value || 0;
+            const cask = caskCents / 100; // dollars per seat-km
+
+            const revenue = seats * lf * fare;
+            const cost = cask * seats * dist;
+            const profit = revenue - cost;
+            const breakeven = (fare > 0) ? (cask * dist / fare) * 100 : 0;
+
+            document.getElementById('e-rev').innerText = "$" + fmt(revenue);
+            document.getElementById('e-cost').innerText = "$" + fmt(cost);
+            const pEl = document.getElementById('e-profit');
+            pEl.innerText = (profit >= 0 ? "+$" : "−$") + fmt(Math.abs(profit));
+            pEl.className = "text-xl font-medium tracking-tight " + (profit >= 0 ? "text-emerald-400" : "text-rose-400");
+            const beEl = document.getElementById('e-be');
+            beEl.innerText = breakeven > 100 ? ">100%" : Math.round(breakeven) + "%";
+            beEl.className = "text-xl font-medium tracking-tight " + (breakeven > 90 ? "text-rose-400" : breakeven > 75 ? "text-amber-400" : "text-white");
+
+            // Verdict
+            const lfPct = Math.round(lf * 100);
+            let v;
+            if (dist === 0) { v = ""; }
+            else if (breakeven > 100) {
+                v = `At a $${fare} average fare this sector can't break even at any load factor — the cost per seat-km is too high for the distance. Either fares need to rise, costs need to fall, or this isn't your aircraft for the route.`;
+            } else if (breakeven > lfPct) {
+                v = `This route needs about ${Math.round(breakeven)}% of seats filled to break even, but you've assumed ${lfPct}%. As modelled it loses money — it only works if you can push loads or fares above your current assumption.`;
+            } else {
+                v = `At ${lfPct}% load and a $${fare} fare, this route clears its breakeven of ~${Math.round(breakeven)}% and turns a profit in this model. The feasibility is sound; the open question is whether real demand sustains that load against the competition.`;
+            }
+            document.getElementById('verdict').innerText = v;
+        }
+
+        ['in-seats','in-fare','in-lf','in-cask'].forEach(id => {
+            document.getElementById(id).addEventListener('input', recomputeEcon);
+        });
+
+        /* ---------------- Init ---------------- */
+        buildOptions();
+        analyze();
+    </script>
+
+</body></html>
